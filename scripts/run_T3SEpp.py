@@ -1,0 +1,165 @@
+#!/usr/bin/env python
+
+"""
+Run T3SEpp to find effector genes. test
+"""
+
+__author__ = "Timo Dijkstra BSc."
+__version__ = "1.0"
+__title__ = "Run T3SEpp"
+__author_email__ = "T.Dijkstra@naktuinbouw.nl"
+__date__ = "07-10-2021"
+
+import argparse
+import subprocess
+from pathlib import Path
+from colorama import Fore
+from utils.utils import is_valid_path, is_valid_directory
+
+SIGNALP = 'signalp.txt'
+TMHMM = 'TMHMM.txt'
+PSORTB = "*_psortb_gramneg.txt"
+SUPPRESS_WARNING_MESSAGE = "2"
+T3SEPP = "T3SEpp.pl"
+PSORTB_ERROR = "Fatal error"
+
+
+def parse_args() -> argparse:
+    """ Parse command line arguments """
+    parser = argparse.ArgumentParser(description='Scan annotated proteins for T3S effectors and extract the genes.')
+    parser.add_argument('-if', '--fasta', help='Prokka annotated proteins in fasta format.', required=True,
+                        type=lambda x: is_valid_path(parser, x))
+    parser.add_argument("-sp", "--signalp", type=lambda x: is_valid_path(parser, x),
+                        required=False, metavar="FILE", help="Path to signalp-4.1/signalp.", default=None)
+    parser.add_argument("-tm", "--tmhmm", type=lambda x: is_valid_path(parser, x),
+                        required=False, metavar="FILE", help="Path to the tmhmm-2.0c/bin/tmhmm.", default=None)
+    parser.add_argument("-ps", "--psortb", type=lambda x: is_valid_path(parser, x),
+                        required=False, metavar="FILE", help="Path to the psortb_no_sudo.", default=None)
+    parser.add_argument("-t", "--t3sepp", type=lambda x: is_valid_directory(parser, x),
+                        required=True, metavar="DIR", help="Path to the directory containing T3SEpp.pl.")
+    parser.add_argument("-cut", "--cutoff", type=float, required=False, help="Cut-off T3SEpp score.", default=0.5)
+    parser.add_argument("-o", "--output", type=Path, required=False, default="",
+                        help="Optional output path for T3SEpp.out.txt.")
+
+    args = parser.parse_args()
+    return args
+
+
+def run_signalp(fasta: str, signalp: str, output: Path):
+    """
+    Run SignalP and store the results in the directory that contains T3SEpp.pl.
+    Run the command in the directory of T3SEpp.
+    :param fasta: Prokka annotated proteins in fasta format.
+    :param signalp: Path to signalp-4.1/signalp.
+    :param output: Path to the directory containing T3SEpp.pl.
+    """
+    subprocess.run(F"{signalp} -t gram- -f short {fasta} > {output / SIGNALP}", shell=True, cwd=output)
+    print(F"{Fore.BLUE}Finished SignalP")
+
+
+def run_tmhmm(fasta: str, tmhmm: str, output: Path):
+    """
+    Run TMHMM and store the results in the directory that contains T3SEpp.pl.
+    Run the command in the directory of T3SEpp.
+    In addition, remove the empty directory that results from running tmhmm.
+    :param fasta: Prokka annotated proteins in fasta format.
+    :param tmhmm: Path to tmhmm-2.0c/bin/tmhmm.
+    :param output: Path to the directory containing T3SEpp.pl.
+    """
+    subprocess.run(F"{tmhmm} {fasta} -short  > {output / TMHMM}", shell=True, cwd=output)
+    subprocess.run(F"rm --dir TMHMM_*", shell=True, cwd=output)
+    print(F"{Fore.BLUE}Finished TMHMM")
+
+
+def run_psortb(fasta: str, psortb: str, output: Path):
+    """
+    Run PSORTb and store the results in the directory that contains T3SEpp.pl.
+    Run the command in the directory of T3SEpp.
+    :param fasta: Prokka annotated proteins in fasta format.
+    :param psortb: Path to the psortb_no_sudo.
+    :param output: Path to the directory containing T3SEpp.pl.
+    """
+    subprocess.run(F"{psortb} -i {fasta} -v --negative -r {output} -o terse", shell=True, cwd=output)
+    print(F"{Fore.BLUE}Finished PSORTb")
+
+
+def run_subcellular_localization_predictors(fasta: str, signalp: str, tmhmm: str, psortb: str,
+                                            output: Path):
+    """
+    If the path to an execution file for a subcellular prediction tool is given, execute the tool.
+    :param fasta: Prokka annotated proteins in fasta format.
+    :param signalp: Path to signalp-4.1/signalp.
+    :param tmhmm: Path to tmhmm-2.0c/bin/tmhmm.
+    :param psortb: Path to the psortb_no_sudo.
+    :param output: Path to the directory containing T3SEpp.pl.
+    """
+    if signalp:
+        run_signalp(fasta, signalp, output)
+    if tmhmm:
+        run_tmhmm(fasta, tmhmm, output)
+    if psortb:
+        run_psortb(fasta, psortb, output)
+
+
+def copy_t3sepp_results(t3sepp_directory: Path, output: Path):
+    """
+    If the argument for copying T3SEpp.out.txt to a directory is given, copy and rename the T3SEpp output file.
+    :param t3sepp_directory: Path to the directory containing T3SEpp.pl.
+    :param output: Output path for T3SEpp.out.txt.
+    """
+    subprocess.run(F"cp {t3sepp_directory / 'Results' / 'T3SEpp.out.txt'} {output}", shell=True)
+
+
+def remove_subcellular_localization_files(signalp: str, tmhmm: str, psortb: str):
+    """
+    Delete the output files generated by the subcellular prediction tools
+    such that it will not interfere by later runs of this script.
+    :param signalp: Location of the SignalP output file with the T3SEpp flag for SignalP as prefix.
+    :param tmhmm: Location of the TMHMM output file with the T3SEpp flag for TMHMM as prefix.
+    :param psortb: Location of the PSORTb output file with the T3SEpp flag for PSORTb as prefix.
+    """
+    if signalp:
+        subprocess.run(F"rm -f {signalp.replace('-signalp ', '')}", shell=True)
+    if tmhmm:
+        subprocess.run(F"rm -f {tmhmm.replace('-tmhmm ', '')}", shell=True)
+    if psortb:
+        subprocess.run(F"rm -f {psortb.replace('-psortb ', '')}", shell=True)
+
+
+def run_t3sepp(fasta: str, t3sepp: Path, cut_off: float, output: Path):
+    """
+    Run T3SEpp and provide, if given, the output files of the subcellular predictors.
+    Run the command in the directory of T3SEpp. Suppress warning messages about TensorFlow.
+    If an additional output directory is given, copy the output to this directory.
+    Finally, remove subcellular localization files.
+    :param fasta: Prokka annotated proteins in fasta format.
+    :param t3sepp: Path to the directory containing T3SEpp.pl.
+    :param cut_off: Cut-off T3SEpp score.
+    :param output: Optional output path for T3SEpp.out.txt.
+    """
+    signalp = "-signalp " + str(Path(t3sepp / SIGNALP)) if Path.is_file(t3sepp / SIGNALP) else ""
+    tmhmm = "-tmhmm " + str(Path(t3sepp / TMHMM)) if Path.is_file(t3sepp / TMHMM) else ""
+
+    psortb_files = list(Path(t3sepp).glob("**/*_psortb_gramneg.txt"))
+    psortb_single_file = psortb_files[0]
+    with open(psortb_single_file) as f:
+        psortb = "-psortb " + str(psortb_single_file) if len(psortb_files) == 1 and not \
+            f.readline().startswith(PSORTB_ERROR) else ""
+
+    subprocess.getoutput(F"perl -W {t3sepp / T3SEPP} -prot {fasta} -cutoff {cut_off} {signalp} {tmhmm} {psortb}")
+    if output:
+        copy_t3sepp_results(t3sepp, output)
+    remove_subcellular_localization_files(signalp, tmhmm, psortb)
+
+
+def main():
+    args = parse_args()
+
+    run_subcellular_localization_predictors(args.fasta, args.signalp, args.tmhmm, args.psortb,
+                                            Path(args.t3sepp))
+    run_t3sepp(args.fasta, Path(args.t3sepp), args.cutoff, args.output)
+    print(F"{Fore.GREEN}FINISHED")
+
+
+if __name__ == '__main__':
+    main()

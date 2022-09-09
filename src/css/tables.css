@@ -1,0 +1,34 @@
+    .table-sortable th {
+    cursor: pointer;
+  }
+
+  .table-sortable .th-sort-asc::after {
+    content: "\25b4";
+  }
+
+  .table-sortable .th-sort-desc::after {
+    content: "\25be";
+  }
+
+  .table-sortable .th-sort-asc::after,
+  .table-sortable .th-sort-desc::after {
+    margin-left: 5px;
+  }
+
+  .table {
+    position: relative;
+  }
+
+  .nak_logo {
+    position: absolute;
+    bottom: -200px;
+    left: 20px;
+  }
+
+  .credit {
+    position: absolute;
+    bottom: -200px;
+    right: 20px;
+  }
+
+  sub{padding:0px;margin-left:-5px;}

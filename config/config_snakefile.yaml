@@ -1,0 +1,53 @@
+# Input. Change these input paths to run the pipeline under different conditions.
+"genome": "/1_nanopore/03_projects/design_specific_effector_primers/Input/Acidovorax_valerianellae_ingroup_NBC-5715_AV.fa"
+"genus": "Acidovorax"
+"genomes_ingroup": "/1_nanopore/03_projects/design_specific_effector_primers/Input/MFEprimer_input_genomes_ingroup/"
+"genomes_outgroup": "/1_nanopore/03_projects/design_specific_effector_primers/Input/MFEprimer_input_genomes_outgroup/"
+"control_genomes": "/1_nanopore/03_projects/design_specific_effector_primers/Input_Aval/MFEprimer_input_genomes_outgroup/GCF_003029845.1.fna /1_nanopore/03_projects/design_specific_effector_primers/Input_Aval/MFEprimer_input_genomes_outgroup/GCF_900104515.1.fna"
+
+# General.
+"working_directory": "/5_workspace/repos/design_specific_effector_primers/"
+"save_general_results": "/1_nanopore/03_projects/design_specific_effector_primers/output/"
+"log_file_output": "/1_nanopore/03_projects/design_specific_effector_primers/output/logs/"
+"threads": 12
+
+# Conda.
+"prokka_env_packages": "envs/Prokka_env.yml"
+"t3sepp_env_packages": "envs/T3SEpp_env.yml"
+"rpsblast": "envs/rpsblast_env.yml"
+"effector_env_packages": "envs/Effector_env.yml"
+
+# Mash dendrogram
+"genome_metadata": ""
+
+# CheckM
+"checkm_executable": "/5_workspace/envs/bga_analysis/bin/checkm"
+
+# T3SEpp.
+"t3sepp_executable": "/5_workspace/tools/T3SEpp/"
+"signalp_executable": "/5_workspace/tools/SignalP/signalp-4.1/signalp"
+"tmhmm_executable": "/5_workspace/tools/TMHMM/tmhmm-2.0c/bin/tmhmm"
+"psortb_executable": "/5_workspace/tools/psortb_no_sudo"
+"t3sepp_cutoff": 0.65
+
+# Perform a reverse PSI-BLAST to get an understanding of the effector domains.
+"rpsblast_db": "/5_workspace/tools/rpsbproc/RpsbProc-x64-linux/db/cdd/Cdd"
+"rpsbproc_executable": "/5_workspace/tools/rpsbproc/RpsbProc-x64-linux/rpsbproc"
+# TODO: link to Domain_gff3.py from naktools directory.
+"domain_gff3": "scripts/Domain_gff3.py"
+"cddid": "/5_workspace/tools/rpsbproc/RpsbProc-x64-linux/data/cddid.tbl"
+
+# Design primers.
+"cut_off_right": 150
+"marker_genes": "1_50_marker_genes.fasta"
+
+# Determine in silico the performance of the primers.
+"database_save": "/0_db_hdd/MFEprimer_input_genomes/"
+"mfeprimer_executable": "/5_workspace/tools/MFE_primer/mfeprimer-3.2.4-linux-amd64"
+"save_jsons": "False"
+
+# Combine results and compute .html output.
+"webserver": "/var/www/html/PRIEMA_Output/"
+
+# Perform a multiple sequence alignment for the generated amplicons.
+"clustalw": "/5_workspace/tools/clustalw-2.1/clustalw2"

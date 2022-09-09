@@ -1,0 +1,37 @@
+    body {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
+        color: white;
+        text-shadow: 0px 0px 5px #123456;
+        height: 75vh;
+        background:
+            linear-gradient(-135deg, rgb(161, 65, 21) 10%, transparent),
+            repeating-linear-gradient(45deg, rgba(161, 65, 21, 1) 0%, rgba(203, 182, 0, 0.6) 5%, transparent 5%, transparent 10%),
+            repeating-linear-gradient(-45deg, rgba(161, 65, 21, 0.4) 0%, rgba(203, 182, 0, 0.5) 5%, transparent 5%, transparent 10%);
+        background-color: rgba(161, 65, 21, 0.25);
+    }
+
+    a:link {color:#cbb600;text-decoration:none;}
+    a:hover {text-decoration:underline;}
+    a {font-size: 30px}
+
+    .nak_logo {
+        position: absolute;
+        bottom: 10px;
+        left: 20px;
+    }
+
+    .gitlab_logo {
+        position: absolute;
+        object-position: right top;
+        top: 10px;
+        right: 20px;
+    }
+
+    .credit {
+        position: absolute;
+        bottom: 10px;
+        right: 20px;
+    }
