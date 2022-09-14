@@ -1,7 +1,7 @@
 from datetime import datetime
 from pathlib import Path
 
-configfile: "/5_workspace/repos/design_specific_effector_primers/config/config_snakefile.yaml"
+configfile: "[path]/repos/design_specific_effector_primers/config/config_snakefile.yaml"
 scripts_directory = config["working_directory"] + "scripts/"
 log_directory = config["save_general_results"] + "logs/"
 log_versions = config["save_general_results"] + "logs/versions.txt"
